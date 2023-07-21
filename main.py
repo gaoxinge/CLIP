@@ -6,8 +6,8 @@ from torch.autograd import Variable
 from scipy.ndimage import gaussian_filter1d
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-MEAN = np.float32((0.26862954, 0.26130258, 0.27577711))
-STD = np.float32((0.48145466, 0.4578275, 0.40821073))
+MEAN = np.float32((0.48145466, 0.4578275, 0.40821073))
+STD = np.float32((0.26862954, 0.26130258, 0.27577711))
 
 model, preprocess = clip.load("ViT-B/32", device=device)
 text = clip.tokenize(["a beautiful girl play with a lovely cat in the playground"]).to(device)
@@ -78,8 +78,13 @@ for i in range(1000):
     img = Variable(img, requires_grad=True)
     optimizer = SGD(img, lr=250)
     optimizer.zero_grad()
+
     image_features = model.encode_image(img)
-    loss = -torch.cosine_similarity(text_features, image_features, dim=1)
+    loss = -torch.cosine_similarity(image_features, text_features, dim=1)
+
+    # loss, _ = model(img, text)
+    # loss = 1 / loss
+
     print(i, loss.detach().numpy()[0])
     loss.backward()
     optimizer.step()
